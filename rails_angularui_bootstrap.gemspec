@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version     = RailsAngularuiBootstrap::VERSION
   s.authors     = ["Cameron Ellis"]
   s.email       = ["cameron@lindenlab.com"]
-  s.homepage    = "TODO"
+  s.homepage    = "https://github.com/cellis/rails-angularui-bootstrap/"
   s.summary     = "Automatically include default templates in angularui bootstrap"
   s.description = "Automatically include default templates in angularui bootstrap"
 
