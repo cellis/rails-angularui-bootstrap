@@ -1,5 +1,3 @@
-#= require_tree ../templates/
-
 angular.module('rails-angularui-bootstrap',[]).run(['$templateCache', ($templateCache)->
 	templates = ['accordion']
 	for template in templates
