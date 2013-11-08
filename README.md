@@ -29,13 +29,13 @@ After that, you can include all the *default* templates by adding
 ```javascript
 	//= require rails-angularui-bootstrap
 ```
-to your app/assets/javascripts/application.js file.
+to your `app/assets/javascripts/application.js` file.
 
 You're done.
 
-Don't want to include every template?
+***
 
-You can include each template individually with
+If you don't want to include every template, you can include each template individually with
 
 ```javascript
 	//= require templates/rails-angularui-bootstrap/<name_of_template_1>
@@ -54,7 +54,9 @@ You can override templates by simply adding the template hamlc file in a directo
 For instance, to override the accordion,
 create:
 
-app/assets/javascripts/templates/rails-angularui-bootstrap/accordion/accordion.hamlc. See [the original AngularUI Bootstrap files](https://github.com/angular-ui/bootstrap/tree/master/template) for examples.
+`app/assets/javascripts/templates/rails-angularui-bootstrap/accordion/accordion.hamlc`
+
+See [the original AngularUI Bootstrap files](https://github.com/angular-ui/bootstrap/tree/master/template) for examples.
 
 # How up to date is this project?
 
