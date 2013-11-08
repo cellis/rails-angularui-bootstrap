@@ -5,7 +5,7 @@
 ## How it works.
 
 It relies on [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing 
-javascript templates in haml. It's currently versioned at 1.6.0, until I find a way to automate the integration of all
+javascript templates in haml. It's currently using AngularUI Bootstrap's version at 0.6.0, until I find a way to automate the integration of all
 the templates. I'm open to suggestions!
 
 ## Installation
