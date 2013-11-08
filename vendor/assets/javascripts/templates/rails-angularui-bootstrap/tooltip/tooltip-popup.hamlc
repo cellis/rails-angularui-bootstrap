@@ -1,0 +1,3 @@
+.tooltip{:class => "{{placement}}", "ng-class" => "{ in: isOpen(), fade: animation() }"}
+  .tooltip-arrow
+  .tooltip-inner{"ng-bind" => "content"}

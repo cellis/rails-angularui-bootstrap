@@ -1,0 +1,3 @@
+.modal.fade.windowClass{:class => "{{ }}", "ng-class" => "{in: animate}", "ng-click" => "close($event)", "ng-style" => "{'z-index': 1050 + index*10, display: 'block'}"}
+  .modal-dialog
+    .modal-content{"ng-transclude" => ""}

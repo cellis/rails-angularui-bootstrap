@@ -1,0 +1,5 @@
+.popover{:class => "{{placement}}", "ng-class" => "{ in: isOpen(), fade: animation() }"}
+  .arrow
+  .popover-inner
+    %h3.popover-title{"ng-bind" => "title", "ng-show" => "title"}
+    .popover-content{"ng-bind" => "content"}

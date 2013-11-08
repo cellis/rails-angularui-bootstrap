@@ -1,0 +1,6 @@
+.modal-header
+  %h3 {{ title }}
+.modal-body
+  %p {{ message }}
+.modal-footer
+  %button.btn{"ng-class" => "btn.cssClass", "ng-click" => "close(btn.result)", "ng-repeat" => "btn in buttons"} {{ btn.label }}

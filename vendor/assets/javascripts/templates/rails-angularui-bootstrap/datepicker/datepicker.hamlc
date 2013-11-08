@@ -1,0 +1,27 @@
+%table.table-condensed{:style => "table-layout:fixed;"}
+  / secondary: last month, disabled: disabled
+  %thead.text-center
+    %tr
+      %th{:style => "overflow: hidden; min-width: 26px"}
+        %button.btn.btn-xs.btn-link{"ng-click" => "move(-1)", :type => "button"}
+          %span.glyphicon.glyphicon-chevron-left
+      %th{:colspan => "{{rows[0].length - 2 + showWeekNumbers}}"}
+        %button.btn.btn-md.btn-link.btn-block{"ng-click" => "toggleMode()", :type => "button"}
+          %strong {{title}}
+      %th{:style => "overflow: hidden; min-width: 26px"}
+        %button.btn.btn-xs.btn-link{"ng-click" => "move(1)", :type => "button"}
+          %span.glyphicon.glyphicon-chevron-right
+    %tr{"ng-show" => "labels.length > 0"}
+      %th.text-center{"ng-show" => "showWeekNumbers", :style => "overflow: hidden; min-width: 26px"}
+        %h6 #
+      %th.text-center{"ng-repeat" => "label in labels", :style => "overflow: hidden; min-width: 26px"}
+        %h6 {{label}}
+  %tbody
+    %tr{"ng-repeat" => "row in rows"}
+      %td.text-center{"ng-show" => "showWeekNumbers", :style => "overflow: hidden; min-width: 26px"}
+        %button.btn.btn-xs.btn-link{:disabled => "", :type => "button"}
+          %strong
+            %em {{ getWeekNumber(row) }}
+      %td.text-center{"ng-repeat" => "dt in row", :style => "overflow: hidden; min-width: 26px"}
+        %button.btn.btn-xs{"ng-class" => "{'btn-primary': dt.selected, 'btn-default': !dt.selected}", "ng-click" => "select(dt.date)", "ng-disabled" => "dt.disabled", :style => "width: 100%; border: 0px", :type => "button"}
+          %span{"ng-class" => "{'text-muted': dt.secondary && !dt.selected}"} {{dt.label}}

@@ -1,0 +1,5 @@
+.tabbable{"ng-class" => "{'tabs-right': direction == 'right', 'tabs-left': direction == 'left', 'tabs-below': direction == 'below'}"}
+  %div{"tabset-titles" => "tabsAbove"}
+  .tab-content
+    .tab-pane{"ng-class" => "{active: tab.active}", "ng-repeat" => "tab in tabs", "tab-content-transclude" => "tab"}
+  %div{"tabset-titles" => "!tabsAbove"}

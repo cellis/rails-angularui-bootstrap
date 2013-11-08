@@ -1,0 +1,27 @@
+%span
+  .row
+    .col-xs-4.text-center
+      %a.btn.btn-link{"ng-click" => "incrementHours()"}
+        %i.glyphicon.glyphicon-chevron-up
+    .col-xs-6.text-center
+      %a.btn.btn-link{"ng-click" => "incrementMinutes()"}
+        %i.glyphicon.glyphicon-chevron-up
+    .col-xs-2
+  .row
+    .col-xs-4
+      .form-group{"ng-class" => "{'has-error': invalidHours}", :style => "margin-bottom: 0px"}
+        %input.form-control.text-center{:maxlength => "2", "ng-change" => "updateHours()", "ng-model" => "hours", "ng-mousewheel" => "incrementHours()", "ng-readonly" => "readonlyInput", :type => "text"}/
+    .col-xs-6
+      .input-group{"ng-class" => "{'has-error': invalidMinutes}"}
+        %span.input-group-addon :
+        %input.form-control.text-center{:maxlength => "2", "ng-change" => "updateMinutes()", "ng-model" => "minutes", "ng-readonly" => "readonlyInput", :type => "text"}/
+    .col-xs-2
+      %button.btn.btn-default.text-center{"ng-click" => "toggleMeridian()", "ng-show" => "showMeridian"} {{meridian}}
+  .row
+    .col-xs-4.text-center
+      %a.btn.btn-link{"ng-click" => "decrementHours()"}
+        %i.glyphicon.glyphicon-chevron-down
+    .col-xs-6.text-center
+      %a.btn.btn-link{"ng-click" => "decrementMinutes()"}
+        %i.glyphicon.glyphicon-chevron-down
+    .col-xs-2

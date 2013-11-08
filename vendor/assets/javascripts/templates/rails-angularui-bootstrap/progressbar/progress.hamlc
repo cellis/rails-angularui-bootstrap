@@ -1,0 +1,2 @@
+.progress
+  %progressbar{:animate => "bar.animate", "ng-repeat" => "bar in bars", :old => "bar.from", :type => "bar.type", :width => "bar.to"}

@@ -1,0 +1,2 @@
+%span{"ng-mouseleave" => "reset()"}
+  %i{"ng-class" => "$index < val && (r.stateOn || 'icon-star') || (r.stateOff || 'icon-star-empty')", "ng-click" => "rate($index + 1)", "ng-mouseenter" => "enter($index + 1)", "ng-repeat" => "r in range"}

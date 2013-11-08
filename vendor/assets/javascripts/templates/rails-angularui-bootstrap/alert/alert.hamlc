@@ -1,0 +1,3 @@
+.alert{"ng-class" => "\"alert-\" + (type || \"warning\")"}
+  %button.close{"ng-click" => "close()", "ng-show" => "closeable", :type => "button"} &times;
+  %div{"ng-transclude" => ""}

@@ -1,0 +1,9 @@
+%ul.dropdown-menu{"ng-style" => "{display: (isOpen && 'block') || 'none', top: position.top+'px', left: position.left+'px'}"}
+  %li{"ng-transclude" => ""}
+  %li.divider
+  %li{:style => "padding: 9px;"}
+    %span.btn-group
+      %button.btn.btn-xs.btn-default{"ng-click" => "today()"} Today
+      %button.btn.btn-xs.btn-info{"ng-class" => "{active: showWeeks}", "ng-click" => "showWeeks = ! showWeeks"} Weeks
+      %button.btn.btn-xs.btn-danger{"ng-click" => "clear()"} Clear
+    %button.btn.btn-xs.btn-success.pull-right{"ng-click" => "isOpen = false"} Close
