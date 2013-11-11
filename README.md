@@ -31,12 +31,30 @@ After that, you can include all the *default* templates by adding
 ```
 to your `app/assets/javascripts/application.js` file.
 
-Finally, include bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](( There's a gem for this,too )), and include the ui-bootstrap
-module with
+Finally, include Bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](There's a gem for this,too), and include the ui-bootstrap
+in your javascript `application.js` with
 
-``
+```coffeescript 
+	@app = angular.module('app', [
+  	'ui.bootstrap'
+	])
+```
 
 You're done.
+
+## Generating the templates
+
+There's a rake task for that. Run
+
+`rake angularui:generate` to create all the haml templates in your app. 
+
+You can specify an angularui bootstrap fork and a branch with:
+
+`rake angularui:generate[https://github.com/elerch/bootstrap.git,bootstrap3_bis2]`
+
+If you're using zsh like me, use:
+
+`rake 'angularui:generate[https://github.com/elerch/bootstrap.git,bootstrap3_bis2]'`
 
 ***
 
@@ -55,6 +73,10 @@ in your app/assets/javascripts/application.js file.
 ```
 
 You can override templates by simply adding the template hamlc file in a directory called app/assets/javascripts/templates/rails-angularui-bootstrap/
+
+
+
+
 
 For instance, to override the accordion,
 create:
