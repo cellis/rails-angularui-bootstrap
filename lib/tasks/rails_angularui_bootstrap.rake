@@ -62,6 +62,8 @@ namespace :angularui do
 		puts 'Removing temp files...'
 		`rm #{options[:ctx]}/assets/javascripts/templates/rails-angularui-bootstrap/**/*.js`
 		`rm -rf tmp/bootstrap`
+
+		puts "Templates were generated in #{options[:ctx]}/assets/javascripts/templates/rails-angularui-bootstrap"
 	end
 
 	desc 'Download and install templates of given branch of angularui for the *client app*'

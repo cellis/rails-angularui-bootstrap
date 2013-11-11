@@ -56,6 +56,8 @@ If you're using zsh like me, use:
 
 `rake 'angularui:generate[https://github.com/elerch/bootstrap.git,bootstrap3_bis2]'`
 
+Note: this task depends on NPM/grunt.
+
 ***
 
 If you don't want to include every template, you can include each template individually with
