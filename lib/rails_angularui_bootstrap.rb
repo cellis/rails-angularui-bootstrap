@@ -1,4 +1,5 @@
 require "rails_angularui_bootstrap/version"
+require "rails_angularui_bootstrap/railtie"
 
 module Rails
 	module AngularUI

@@ -18,4 +18,5 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", "~> 4.0.0"
   s.add_dependency "haml_coffee_assets", "~> 1.14.0"
+  s.add_dependency "html2haml", "~> 1.0.1"
 end

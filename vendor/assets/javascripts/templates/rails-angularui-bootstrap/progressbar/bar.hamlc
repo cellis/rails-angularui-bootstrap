@@ -1,1 +1,0 @@
-.bar{"ng-class" => "type && \"bar-\" + type"}

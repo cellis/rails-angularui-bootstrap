@@ -14,3 +14,4 @@ gemspec
 # gem 'debugger'
 
 gem 'haml_coffee_assets'
+gem 'html2haml'

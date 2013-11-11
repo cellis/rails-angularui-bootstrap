@@ -31,6 +31,11 @@ After that, you can include all the *default* templates by adding
 ```
 to your `app/assets/javascripts/application.js` file.
 
+Finally, include bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](( There's a gem for this,too )), and include the ui-bootstrap
+module with
+
+``
+
 You're done.
 
 ***

@@ -1,32 +1,10 @@
-begin
-  require 'bundler/setup'
-rescue LoadError
-  puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
+load './lib/tasks/rails_angularui_bootstrap.rake'
+
+namespace :angularui do
+	desc 'Download and install templates of given branch of angularui for the *gem*'
+	task :generate_templates, :repo, :branch do |t, args|
+		args.with_defaults(ctx: 'vendor')
+		puts "args are #{args.inspect}"
+		gen_templates args
+	end
 end
-
-require 'rdoc/task'
-
-RDoc::Task.new(:rdoc) do |rdoc|
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'RailsAngularuiBootstrap'
-  rdoc.options << '--line-numbers'
-  rdoc.rdoc_files.include('README.rdoc')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
-
-
-
-
-Bundler::GemHelper.install_tasks
-
-require 'rake/testtask'
-
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.libs << 'test'
-  t.pattern = 'test/**/*_test.rb'
-  t.verbose = false
-end
-
-
-task default: :test
