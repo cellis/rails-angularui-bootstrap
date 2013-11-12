@@ -56,7 +56,7 @@ namespace :angularui do
 		
 		# convert templates to haml
 		puts 'Converting to haml...'
-		`for file in #{options[:ctx]}/assets/javascripts/templates/rails-angularui-bootstrap/**/*.html; do html2haml -e $file ${file%html}haml 2>&1 && rm $file; done`
+		`for file in #{options[:ctx]}/assets/javascripts/templates/rails-angularui-bootstrap/**/*.html; do html2haml -e $file ${file%html}hamlc 2>&1 && rm $file; done`
 
 		# remove all js files
 		puts 'Removing temp files...'
