@@ -1,7 +1,5 @@
-# require the ui-bootstrap module, in case the user wants to selectively load
-#= require rails-angularui-bootstrap/ui-bootstrap-0.6.0-SNAPSHOT
-#= require hamlcoffee
-
+# require the ui-bootstrap module, in case the user wants to selectively load 
+#= require rails-angularui-bootstrap/ui-bootstrap-0.6.0-SNAPSHOT.js 
 angular.module('rails-angularui-bootstrap',[]).run(['$templateCache', ($templateCache)->
 	JST = window.JST
 	if JST

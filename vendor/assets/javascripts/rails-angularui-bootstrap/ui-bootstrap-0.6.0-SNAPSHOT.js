@@ -1,15 +1,16 @@
+// generated from https://github.com/elerch/bootstrap.git:bootstrap3_bis2 version: 0.6.0-SNAPSHOT on 11-12-2013 00:30:05 
 angular.module("ui.bootstrap", ["ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdownToggle","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
 angular.module('ui.bootstrap.transition', [])
 
 /**
- * $transition service provides a consistent interface to trigger CSS 3 transitions and to be informed when they complete.
- * @param  {DOMElement} element  The DOMElement that will be animated.
- * @param  {string|object|function} trigger  The thing that will cause the transition to start:
- *   - As a string, it represents the css class to be added to the element.
- *   - As an object, it represents a hash of style attributes to be applied to the element.
- *   - As a function, it represents a function to be called that will cause the transition to occur.
- * @return {Promise}  A promise that is resolved when the transition finishes.
- */
+* $transition service provides a consistent interface to trigger CSS 3 transitions and to be informed when they complete.
+* @param {DOMElement} element The DOMElement that will be animated.
+* @param {string|object|function} trigger The thing that will cause the transition to start:
+* - As a string, it represents the css class to be added to the element.
+* - As an object, it represents a hash of style attributes to be applied to the element.
+* - As a function, it represents a function to be called that will cause the transition to occur.
+* @return {Promise} A promise that is resolved when the transition finishes.
+*/
 .factory('$transition', ['$q', '$timeout', '$rootScope', function($q, $timeout, $rootScope) {
 
   var $transition = function(element, trigger, options) {
@@ -53,6 +54,31 @@ angular.module('ui.bootstrap.transition', [])
       deferred.reject('Transition cancelled');
     };
 
+    // Emulate transitionend event, useful when support is assumed to be
+    // available, but may not actually be used due to a transition property
+    // not being used in CSS (for example, in versions of firefox prior to 16,
+    // only -moz-transition is supported -- and is not used in Bootstrap3's CSS
+    // -- As such, no transitionend event would be fired due to no transition
+    // ever taking place. This method allows a fallback for such browsers.)
+    deferred.promise.emulateTransitionEnd = function(duration) {
+      var called = false;
+      deferred.promise.then(
+        function() { called = true; },
+        function() { called = true; }
+      );
+
+      var callback = function() {
+        if ( !called ) {
+          // If we got here, we probably aren't going to get a real
+          // transitionend event. Emit a dummy to the handler.
+          element.triggerHandler(endEventName);
+        }
+      };
+
+      $timeout(callback, duration);
+      return deferred.promise;
+    };
+
     return deferred.promise;
   };
 
@@ -81,7 +107,6 @@ angular.module('ui.bootstrap.transition', [])
   $transition.animationEndEventName = findEndEventName(animationEndEventNames);
   return $transition;
 }]);
-
 angular.module('ui.bootstrap.collapse',['ui.bootstrap.transition'])
 
 // The collapsible directive indicates a block of html that will expand and collapse
@@ -93,12 +118,15 @@ angular.module('ui.bootstrap.collapse',['ui.bootstrap.transition'])
   // The fix is to remove the "collapse" CSS class while changing the height back to auto - phew!
   var fixUpHeight = function(scope, element, height) {
     // We remove the collapse CSS class to prevent a transition when we change to height: auto
+    var collapse = element.hasClass('collapse');
     element.removeClass('collapse');
     element.css({ height: height });
     // It appears that  reading offsetWidth makes the browser realise that we have changed the
     // height already :-/
     var x = element[0].offsetWidth;
+    if(collapse) {
     element.addClass('collapse');
+    }
   };
 
   return {
@@ -131,47 +159,201 @@ angular.module('ui.bootstrap.collapse',['ui.bootstrap.transition'])
         }
       });
       
+      // Some jQuery-like functionality, based on implementation in Prototype.
+      //
+      // There is a problem with these: We're instantiating them for every
+      // instance of the directive, and that's not very good.
+      //
+      // But we do need a more robust way to calculate dimensions of an item,
+      // scrollWidth/scrollHeight is not super reliable, and we can't rely on
+      // jQuery or Prototype or any other framework being used.
+      var helpers = {
+        style: function(element, prop) {
+          var elem = element;
+          if(typeof elem.length === 'number') {
+            elem = elem[0];
+          }
+          function camelcase(name) {
+            return name.replace(/-+(.)?/g, function(match, chr) {
+              return chr ? chr.toUpperCase() : '';
+            });
+          }
+          prop = prop === 'float' ? 'cssFloat' : camelcase(prop);
+          var value = elem.style[prop];
+          if (!value || value === 'auto') {
+            var css = window.getComputedStyle(elem, null);
+            value = css ? css[prop] : null;
+          }
+          if (prop === 'opacity') {
+            return value ? parseFloat(value) : 1.0;
+          }
+          return value === 'auto' ? null : value;
+        },
+
+        size: function(element) {
+          var dom = element[0];
+          var display = helpers.style(element, 'display');
+
+          if (display && display !== 'none') {
+            // Fast case: rely on offset dimensions
+            return { width: dom.offsetWidth, height: dom.offsetHeight };
+          }
+  
+          // Slow case -- Save original CSS properties, update the CSS, and then
+          // use offset dimensions, and restore the original CSS
+          var currentStyle = dom.style;
+          var originalStyles = {
+            visibility: currentStyle.visibility,
+            position: currentStyle.position,
+            display: currentStyle.display
+          };
+
+          var newStyles = {
+            visibility: 'hidden',
+            display: 'block'
+          };
+
+          // Switching `fixed` to `absolute` causes issues in Safari.
+          if (originalStyles.position !== 'fixed') {
+            newStyles.position = 'absolute';
+          }
+
+          // Quickly swap-in styles which would allow us to utilize offset
+          // dimensions
+          element.css(newStyles);
+
+          var dimensions = {
+            width: dom.offsetWidth,
+            height: dom.offsetHeight
+          };
+
+          // And restore the original styles
+          element.css(originalStyles);
+
+          return dimensions;
+        },
+
+        width: function(element, value) {
+          if(typeof value === 'number' || typeof value === 'string') {
+            if(typeof value === 'number') {
+              value = value + 'px';
+            }
+            element.css({ 'width': value });
+            return;
+          }
+          return helpers.size(element).width;
+        },
+      
+        height: function(element, value) {
+          if(typeof value === 'number' || typeof value === 'string') {
+            if(typeof value === 'number') {
+              value = value + 'px';
+            }
+            element.css({ 'height': value });
+            return;
+          }
+          return helpers.size(element).height;
+        },
+        
+        dimension: function() {
+          var hasWidth = element.hasClass('width');
+          return hasWidth ? 'width' : 'height';
+        }
+      };
+
+      var events = {
+        beforeShow: function(dimension, dimensions) {
+          element
+            .removeClass('collapse')
+            .removeClass('collapsed')
+            .addClass('collapsing');
+          helpers[dimension](element, 0);
+        },
+        
+        beforeHide: function(dimension, dimensions) {
+          // Read offsetHeight and reset height:
+          helpers[dimension](element, dimensions[dimension] + "px");
+          var unused = element[0].offsetWidth,
+              unused2 = element[0].offsetHeight;
+          element
+            .addClass('collapsing')
+            .removeClass('collapse')
+            .removeClass('in');
+        },
+        
+        afterShow: function(dimension) {
+          element
+            .removeClass('collapsing')
+            .addClass('in');
+          helpers[dimension](element, 'auto');
+          isCollapsed = false;
+        },
+        
+        afterHide: function(dimension) {
+          element
+            .removeClass('collapsing')
+            .addClass('collapsed')
+            .addClass('collapse');
+          isCollapsed = true;
+        }
+      };
 
       var currentTransition;
-      var doTransition = function(change) {
-        if ( currentTransition ) {
-          currentTransition.cancel();
+      var doTransition = function(showing, pixels) {
+        if (currentTransition || showing === element.hasClass('in')) {
+          return;
         }
-        currentTransition = $transition(element,change);
+
+        var dimension = helpers.dimension();
+        var dimensions = helpers.size(element);
+        var name = showing ? 'Show' : 'Hide';
+        
+        events['before' + name](dimension, dimensions);
+
+        var query = {};
+        var makeUpper = function(name) {
+          return name.charAt(0).toUpperCase() + name.slice(1);
+        };
+        if(pixels==='scroll') {
+          pixels = element[0][pixels + makeUpper(dimension)];
+        }
+        if(typeof pixels === 'number') {
+          pixels = pixels + "px";
+        }
+        query[dimension] = pixels;
+        currentTransition = $transition(element,query);
         currentTransition.then(
-          function() { currentTransition = undefined; },
-          function() { currentTransition = undefined; }
+          function() {
+            events['after' + name](dimension);
+            currentTransition = undefined;
+          },
+          function(reason) {
+            var descr = showing ? 'expansion' : 'collapse';
+            currentTransition = undefined;
+          }
         );
         return currentTransition;
       };
 
       var expand = function() {
-        if (initialAnimSkip) {
+        if (initialAnimSkip || !$transition.transitionEndEventName) {
           initialAnimSkip = false;
-          if ( !isCollapsed ) {
-            fixUpHeight(scope, element, 'auto');
-          }
+          var dimension = helpers.dimension();
+          helpers[dimension](element, 'auto');
+          events.afterShow(dimension);
         } else {
-          doTransition({ height : element[0].scrollHeight + 'px' })
-          .then(function() {
-            // This check ensures that we don't accidentally update the height if the user has closed
-            // the group while the animation was still running
-            if ( !isCollapsed ) {
-              fixUpHeight(scope, element, 'auto');
+          doTransition(true, 'scroll');
             }
-          });
-        }
-        isCollapsed = false;
       };
       
       var collapse = function() {
-        isCollapsed = true;
-        if (initialAnimSkip) {
+        if (initialAnimSkip || !$transition.transitionEndEventName) {
           initialAnimSkip = false;
-          fixUpHeight(scope, element, 0);
+          var dimension = helpers.dimension();
+          helpers[dimension](element, 0);
+          events.afterHide(dimension);
         } else {
-          fixUpHeight(scope, element, element[0].scrollHeight + 'px');
-          doTransition({'height':'0'});
+          doTransition(false, '0');
         }
       };
     }
@@ -181,7 +363,8 @@ angular.module('ui.bootstrap.collapse',['ui.bootstrap.transition'])
 angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
 
 .constant('accordionConfig', {
-  closeOthers: true
+  closeOthers: true,
+  templateUrl: 'template/accordion/accordion.html'
 })
 
 .controller('AccordionController', ['$scope', '$attrs', 'accordionConfig', function ($scope, $attrs, accordionConfig) {
@@ -223,24 +406,28 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
 
 // The accordion directive simply sets up the directive controller
 // and adds an accordion CSS class to itself element.
-.directive('accordion', function () {
+.directive('accordion', function (accordionConfig) {
   return {
     restrict:'EA',
     controller:'AccordionController',
     transclude: true,
     replace: false,
-    templateUrl: 'template/accordion/accordion.html'
+    templateUrl: accordionConfig.templateUrl
   };
 })
 
+.constant('accordionGroupConfig', {
+  templateUrl: 'template/accordion/accordion-group.html'
+})
+
 // The accordion-group directive indicates a block of html that will expand and collapse in an accordion
-.directive('accordionGroup', ['$parse', '$transition', '$timeout', function($parse, $transition, $timeout) {
+.directive('accordionGroup', ['$parse', '$transition', '$timeout', 'accordionGroupConfig', function($parse, $transition, $timeout, accordionGroupConfig) {
   return {
     require:'^accordion',         // We need this directive to be inside an accordion
     restrict:'EA',
     transclude:true,              // It transcludes the contents of the directive into the template
     replace: true,                // The element containing the directive will be replaced with the template
-    templateUrl:'template/accordion/accordion-group.html',
+    templateUrl: accordionGroupConfig.templateUrl,
     scope:{ heading:'@' },        // Create an isolated scope and interpolate the heading attribute onto this scope
     controller: ['$scope', function($scope) {
       this.setHeading = function(element) {
@@ -320,10 +507,16 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
   };
 });
 
-angular.module("ui.bootstrap.alert", []).directive('alert', function () {
+angular.module("ui.bootstrap.alert", [])
+
+.constant('alertConfig', {
+  templateUrl: 'template/alert/alert.html'
+})
+
+.directive('alert', ['alertConfig', function (alertConfig) {
   return {
     restrict:'EA',
-    templateUrl:'template/alert/alert.html',
+    templateUrl: alertConfig.templateUrl,
     transclude:true,
     replace:true,
     scope: {
@@ -334,7 +527,7 @@ angular.module("ui.bootstrap.alert", []).directive('alert', function () {
       scope.closeable = "close" in iAttrs;
     }
   };
-});
+}]);
 
 angular.module('ui.bootstrap.bindHtml', [])
 
@@ -581,6 +774,10 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
   };
 }])
 
+.constant('carouselConfig', {
+  templateUrl: 'template/carousel/carousel.html'
+})
+
 /**
  * @ngdoc directive
  * @name ui.bootstrap.carousel.directive:carousel
@@ -619,14 +816,14 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
   </file>
 </example>
  */
-.directive('carousel', [function() {
+.directive('carousel', ['carouselConfig', function(carouselConfig) {
   return {
     restrict: 'EA',
     transclude: true,
     replace: true,
     controller: 'CarouselController',
     require: 'carousel',
-    templateUrl: 'template/carousel/carousel.html',
+    templateUrl: carouselConfig.templateUrl,
     scope: {
       interval: '=',
       noTransition: '=',
@@ -634,6 +831,10 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
     }
   };
 }])
+
+.constant('carouselSlideConfig', {
+  templateUrl: 'template/carousel/slide.html'
+})
 
 /**
  * @ngdoc directive
@@ -699,13 +900,13 @@ function CarouselDemoCtrl($scope) {
 </example>
 */
 
-.directive('slide', ['$parse', function($parse) {
+.directive('slide', ['$parse', 'carouselSlideConfig', function($parse, carouselSlideConfig) {
   return {
     require: '^carousel',
     restrict: 'EA',
     transclude: true,
     replace: true,
-    templateUrl: 'template/carousel/slide.html',
+    templateUrl: carouselSlideConfig.templateUrl, 
     scope: {
     },
     link: function (scope, element, attrs, carouselCtrl) {
@@ -787,7 +988,52 @@ angular.module('ui.bootstrap.position', [])
       return offsetParent || docDomEl;
     };
 
-    return {
+    /**
+     * Temporarily swap CSS properties in, and perform an operation. Based on jQuery's
+     * internal 'jQuery.swap' routine.
+     *
+     * @param element
+     * @param css object containing css property keys and values to swap in
+     * @callback operation to perform while the CSS properties are swapped in
+     */
+    var swapCss = function (element, css, callback) {
+      var ret, prop, old = {};
+      element = angular.element(element);
+      args = Array.prototype.slice.call(arguments, 3);
+
+      for (prop in css) {
+        old[prop] = element[0].style[prop];
+        element[0].style[prop] = css[prop];
+      }
+
+      ret = callback.apply(element, args);
+
+      for (prop in css) {
+        element[0].style[prop] = old[prop];
+      }
+
+      return ret;
+    };
+
+    var swapDisplay = /^(none|table(?!-c[ea]).+)/;
+    var cssShow = {
+      position: 'absolute',
+      visibility: 'hidden',
+      display: 'block'
+    };
+
+    /**
+     * Return offsetWidth or offsetHeight of an element.
+     */
+    var widthOrHeight = function(element, name) {
+      if (typeof element === 'string') {
+        name = element;
+        element = this;
+      }
+      return element[0][('offset' + name.charAt(0).toUpperCase() + name.substr(1))];
+    };
+
+    var service = {
       /**
        * Provides read-only equivalent of jQuery's position function:
        * http://api.jquery.com/position/
@@ -824,6 +1070,21 @@ angular.module('ui.bootstrap.position', [])
         };
       }
     };
+
+    angular.forEach(['width', 'height'], function(name) {
+      service[name] = function(element, value) {
+        element = angular.element(element);
+        if (arguments.length > 1) {
+          return element.css(name, value);
+        }
+        if (element[0].offsetWidth === 0 && swapDisplay.test(getStyle(element[0], 'display'))) {
+          return swapCss(element, cssShow, widthOrHeight, name);
+        }
+        return widthOrHeight(element, name);
+      };
+    });
+
+    return service;
   }]);
 
 angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.position'])
@@ -1081,7 +1342,12 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.position'])
 
 .constant('datepickerPopupConfig', {
   dateFormat: 'yyyy-MM-dd',
-  closeOnDateSelection: true
+  currentText: 'Today',
+  toggleWeeksText: 'Weeks',
+  clearText: 'Clear',
+  closeText: 'Done',
+  closeOnDateSelection: true,
+  appendToBody: false
 })
 
 .directive('datepickerPopup', ['$compile', '$parse', '$document', '$position', 'dateFilter', 'datepickerPopupConfig',
@@ -1090,14 +1356,33 @@ function ($compile, $parse, $document, $position, dateFilter, datepickerPopupCon
     restrict: 'EA',
     require: 'ngModel',
     link: function(originalScope, element, attrs, ngModel) {
+      var dateFormat;
+      attrs.$observe('datepickerPopup', function(value) {
+          dateFormat = value || datepickerPopupConfig.dateFormat;
+          ngModel.$render();
+      });
 
-      var closeOnDateSelection = angular.isDefined(attrs.closeOnDateSelection) ? scope.$eval(attrs.closeOnDateSelection) : datepickerPopupConfig.closeOnDateSelection;
-      var dateFormat = attrs.datepickerPopup || datepickerPopupConfig.dateFormat;
+      var closeOnDateSelection = angular.isDefined(attrs.closeOnDateSelection) ? originalScope.$eval(attrs.closeOnDateSelection) : datepickerPopupConfig.closeOnDateSelection;
+      var appendToBody = angular.isDefined(attrs.datepickerAppendToBody) ? originalScope.$eval(attrs.datepickerAppendToBody) : datepickerPopupConfig.appendToBody;
 
-     // create a child scope for the datepicker directive so we are not polluting original scope
+      // create a child scope for the datepicker directive so we are not polluting original scope
       var scope = originalScope.$new();
+
       originalScope.$on('$destroy', function() {
         scope.$destroy();
+      });
+
+      attrs.$observe('currentText', function(text) {
+        scope.currentText = angular.isDefined(text) ? text : datepickerPopupConfig.currentText;
+      });
+      attrs.$observe('toggleWeeksText', function(text) {
+        scope.toggleWeeksText = angular.isDefined(text) ? text : datepickerPopupConfig.toggleWeeksText;
+      });
+      attrs.$observe('clearText', function(text) {
+        scope.clearText = angular.isDefined(text) ? text : datepickerPopupConfig.clearText;
+      });
+      attrs.$observe('closeText', function(text) {
+        scope.closeText = angular.isDefined(text) ? text : datepickerPopupConfig.closeText;
       });
 
       var getIsOpen, setIsOpen;
@@ -1254,12 +1539,17 @@ function ($compile, $parse, $document, $position, dateFilter, datepickerPopupCon
         $setModelValue(originalScope, null);
       };
 
-      element.after($compile(popupEl)(scope));
+      var $popup = $compile(popupEl)(scope);
+      if ( appendToBody ) {
+        $document.find('body').append($popup);
+      } else {
+        element.after($popup);
+      }
     }
   };
 }])
 
-.directive('datepickerPopupWrap', [function() {
+.directive('datepickerPopupWrap', function() {
   return {
     restrict:'E',
     replace: true,
@@ -1272,7 +1562,7 @@ function ($compile, $parse, $document, $position, dateFilter, datepickerPopupCon
       });
     }
   };
-}]);
+});
 
 /*
  * dropdownToggle - Provides dropdown menu functionality in place of bootstrap js
@@ -1382,34 +1672,20 @@ angular.module('ui.bootstrap.modal', [])
     };
   })
 
+  .constant('modalConfig', {
+    backdropTemplateUrl: 'template/modal/backdrop.html',
+    windowTemplateUrl: 'template/modal/window.html' 
+  })
+
 /**
  * A helper directive for the $modal service. It creates a backdrop element.
  */
-  .directive('modalBackdrop', ['$timeout', function ($timeout) {
+  .directive('modalBackdrop', ['$modalStack', '$timeout', 'modalConfig', function ($modalStack, $timeout, modalConfig) {
     return {
       restrict: 'EA',
       replace: true,
-      templateUrl: 'template/modal/backdrop.html',
+      templateUrl: modalConfig.backdropTemplateUrl,
       link: function (scope, element, attrs) {
-        //trigger CSS transitions
-        $timeout(function () {
-          scope.animate = true;
-        });
-      }
-    };
-  }])
-
-  .directive('modalWindow', ['$modalStack', '$timeout', function ($modalStack, $timeout) {
-    return {
-      restrict: 'EA',
-      scope: {
-        index: '@'
-      },
-      replace: true,
-      transclude: true,
-      templateUrl: 'template/modal/window.html',
-      link: function (scope, element, attrs) {
-        scope.windowClass = attrs.windowClass || '';
 
         //trigger CSS transitions
         $timeout(function () {
@@ -1418,12 +1694,32 @@ angular.module('ui.bootstrap.modal', [])
 
         scope.close = function (evt) {
           var modal = $modalStack.getTop();
-          if (modal && modal.value.backdrop && modal.value.backdrop != 'static' && (evt.target === evt.currentTarget)) {
+          if (modal && modal.value.backdrop && modal.value.backdrop != 'static') {
             evt.preventDefault();
             evt.stopPropagation();
             $modalStack.dismiss(modal.key, 'backdrop click');
           }
         };
+      }
+    };
+  }])
+
+  .directive('modalWindow', ['$timeout', 'modalConfig', function ($timeout, modalConfig) {
+    return {
+      restrict: 'EA',
+      scope: {
+        index: '@'
+      },
+      replace: true,
+      transclude: true,
+      templateUrl: modalConfig.windowTemplateUrl,
+      link: function (scope, element, attrs) {
+        scope.windowClass = attrs.windowClass || '';
+
+        //trigger CSS transitions
+        $timeout(function () {
+          scope.animate = true;
+        });
       }
     };
   }])
@@ -1448,10 +1744,6 @@ angular.module('ui.bootstrap.modal', [])
         return topBackdropIndex;
       }
 
-      $rootScope.$watch(openedWindows.length, function(noOfModals){
-        body.toggleClass('modal-open', openedWindows.length() > 0);
-      });
-
       $rootScope.$watch(backdropIndex, function(newBackdropIndex){
         backdropScope.index = newBackdropIndex;
       });
@@ -1467,7 +1759,7 @@ angular.module('ui.bootstrap.modal', [])
         modalWindow.modalDomEl.remove();
 
         //remove backdrop if no longer needed
-        if (backdropIndex() == -1) {
+        if (backdropDomEl && backdropIndex() == -1) {
           backdropDomEl.remove();
           backdropDomEl = undefined;
         }
@@ -1515,9 +1807,9 @@ angular.module('ui.bootstrap.modal', [])
       };
 
       $modalStack.close = function (modalInstance, result) {
-        var modalWindow = openedWindows.get(modalInstance).value;
-        if (modalWindow) {
-          modalWindow.deferred.resolve(result);
+        var modal = openedWindows.get(modalInstance);
+        if (modal) {
+          modal.value.deferred.resolve(result);
           removeModalWindow(modalInstance);
         }
       };
@@ -1539,13 +1831,11 @@ angular.module('ui.bootstrap.modal', [])
 
   .provider('$modal', function () {
 
-    var defaultOptions = {
-      backdrop: true, //can be also false or 'static'
-      keyboard: true
-    };
-
-    return {
-      options: defaultOptions,
+    var $modalProvider = {
+      options: {
+        backdrop: true, //can be also false or 'static'
+        keyboard: true
+      },
       $get: ['$injector', '$rootScope', '$q', '$http', '$templateCache', '$controller', '$modalStack',
         function ($injector, $rootScope, $q, $http, $templateCache, $controller, $modalStack) {
 
@@ -1578,15 +1868,15 @@ angular.module('ui.bootstrap.modal', [])
               result: modalResultDeferred.promise,
               opened: modalOpenedDeferred.promise,
               close: function (result) {
-                $modalStack.close(this, result);
+                $modalStack.close(modalInstance, result);
               },
               dismiss: function (reason) {
-                $modalStack.dismiss(this, reason);
+                $modalStack.dismiss(modalInstance, reason);
               }
             };
 
             //merge and clean up options
-            modalOptions = angular.extend({}, defaultOptions, modalOptions);
+            modalOptions = angular.extend({}, $modalProvider.options, modalOptions);
             modalOptions.resolve = modalOptions.resolve || {};
 
             //verify options
@@ -1601,6 +1891,8 @@ angular.module('ui.bootstrap.modal', [])
             templateAndResolvePromise.then(function resolveSuccess(tplAndVars) {
 
               var modalScope = (modalOptions.scope || $rootScope).$new();
+              modalScope.$close = modalInstance.close;
+              modalScope.$dismiss = modalInstance.dismiss;
 
               var ctrlInstance, ctrlLocals = {};
               var resolveIter = 1;
@@ -1641,7 +1933,10 @@ angular.module('ui.bootstrap.modal', [])
           return $modal;
         }]
     };
+
+    return $modalProvider;
   });
+
 angular.module('ui.bootstrap.pagination', [])
 
 .controller('PaginationController', ['$scope', '$attrs', '$parse', '$interpolate', function ($scope, $attrs, $parse, $interpolate) {
@@ -1718,7 +2013,8 @@ angular.module('ui.bootstrap.pagination', [])
   previousText: 'Previous',
   nextText: 'Next',
   lastText: 'Last',
-  rotate: true
+  rotate: true,
+  templateUrl: 'template/pagination/pagination.html'
 })
 
 .directive('pagination', ['$parse', 'paginationConfig', function($parse, config) {
@@ -1731,7 +2027,7 @@ angular.module('ui.bootstrap.pagination', [])
       numPages: '='
     },
     controller: 'PaginationController',
-    templateUrl: 'template/pagination/pagination.html',
+    templateUrl: config.templateUrl,
     replace: true,
     link: function(scope, element, attrs, paginationCtrl) {
 
@@ -1839,7 +2135,8 @@ angular.module('ui.bootstrap.pagination', [])
   itemsPerPage: 10,
   previousText: '« Previous',
   nextText: 'Next »',
-  align: true
+  align: true,
+  templateUrl: 'template/pagination/pager.html'
 })
 
 .directive('pager', ['pagerConfig', function(config) {
@@ -1852,7 +2149,7 @@ angular.module('ui.bootstrap.pagination', [])
       numPages: '='
     },
     controller: 'PaginationController',
-    templateUrl: 'template/pagination/pager.html',
+    templateUrl: config.templateUrl,
     replace: true,
     link: function(scope, element, attrs, paginationCtrl) {
 
@@ -2196,27 +2493,32 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
   }];
 })
 
-.directive( 'tooltipPopup', function () {
+.constant('tooltipConfig', {
+  templateUrl: 'template/tooltip/tooltip-popup.html',
+  htmlUnsafeTemplateUrl: 'template/tooltip/tooltip-html-unsafe-popup.html'
+})
+
+.directive( 'tooltipPopup', ['tooltipConfig', function (tooltipConfig) {
   return {
     restrict: 'E',
     replace: true,
     scope: { content: '@', placement: '@', animation: '&', isOpen: '&' },
-    templateUrl: 'template/tooltip/tooltip-popup.html'
+    templateUrl: tooltipConfig.templateUrl
   };
-})
+}])
 
 .directive( 'tooltip', [ '$tooltip', function ( $tooltip ) {
   return $tooltip( 'tooltip', 'tooltip', 'mouseenter' );
 }])
 
-.directive( 'tooltipHtmlUnsafePopup', function () {
+.directive( 'tooltipHtmlUnsafePopup', ['tooltipConfig', function (tooltipConfig) {
   return {
     restrict: 'E',
     replace: true,
     scope: { content: '@', placement: '@', animation: '&', isOpen: '&' },
-    templateUrl: 'template/tooltip/tooltip-html-unsafe-popup.html'
+    templateUrl: tooltipConfig.htmlUnsafeTemplateUrl
   };
-})
+}])
 
 .directive( 'tooltipHtmlUnsafe', [ '$tooltip', function ( $tooltip ) {
   return $tooltip( 'tooltipHtmlUnsafe', 'tooltip', 'mouseenter' );
@@ -2228,14 +2530,18 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
  * just mouse enter/leave, html popovers, and selector delegatation.
  */
 angular.module( 'ui.bootstrap.popover', [ 'ui.bootstrap.tooltip' ] )
-.directive( 'popoverPopup', function () {
+.constant('popoverConfig', {
+  templateUrl: 'template/popover/popover.html'
+})
+
+.directive( 'popoverPopup', ['popoverConfig', function (popoverConfig) {
   return {
     restrict: 'EA',
     replace: true,
     scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&' },
-    templateUrl: 'template/popover/popover.html'
+    templateUrl: popoverConfig.templateUrl
   };
-})
+}])
 .directive( 'popover', [ '$compile', '$timeout', '$parse', '$window', '$tooltip', function ( $compile, $timeout, $parse, $window, $tooltip ) {
   return $tooltip( 'popover', 'popover', 'click' );
 }]);
@@ -2246,7 +2552,9 @@ angular.module('ui.bootstrap.progressbar', ['ui.bootstrap.transition'])
 .constant('progressConfig', {
   animate: true,
   autoType: false,
-  stackedTypes: ['success', 'info', 'warning', 'danger']
+  stackedTypes: ['success', 'info', 'warning', 'danger'],
+  templateUrl: 'template/progressbar/progress.html',
+  barTemplateUrl: 'template/progressbar/bar.html'
 })
 
 .controller('ProgressBarController', ['$scope', '$attrs', 'progressConfig', function($scope, $attrs, progressConfig) {
@@ -2286,7 +2594,7 @@ angular.module('ui.bootstrap.progressbar', ['ui.bootstrap.transition'])
     this.clearBars();
 }])
 
-.directive('progress', function() {
+.directive('progress', ['progressConfig', function(progressConfig) {
     return {
         restrict: 'EA',
         replace: true,
@@ -2296,7 +2604,7 @@ angular.module('ui.bootstrap.progressbar', ['ui.bootstrap.transition'])
             onFull: '&',
             onEmpty: '&'
         },
-        templateUrl: 'template/progressbar/progress.html',
+        templateUrl: progressConfig.templateUrl,
         link: function(scope, element, attrs, controller) {
             scope.$watch('value', function(newValue, oldValue) {
                 controller.clearBars();
@@ -2322,9 +2630,9 @@ angular.module('ui.bootstrap.progressbar', ['ui.bootstrap.transition'])
             }, true);
         }
     };
-})
+}])
 
-.directive('progressbar', ['$transition', function($transition) {
+.directive('progressbar', ['$transition', 'progressConfig', function($transition, progressConfig) {
     return {
         restrict: 'EA',
         replace: true,
@@ -2334,7 +2642,7 @@ angular.module('ui.bootstrap.progressbar', ['ui.bootstrap.transition'])
             type: '=',
             animate: '='
         },
-        templateUrl: 'template/progressbar/bar.html',
+        templateUrl: progressConfig.barTemplateUrl,
         link: function(scope, element) {
             scope.$watch('width', function(value) {
                 if (scope.animate) {
@@ -2352,7 +2660,8 @@ angular.module('ui.bootstrap.rating', [])
 .constant('ratingConfig', {
   max: 5,
   stateOn: null,
-  stateOff: null
+  stateOff: null,
+  templateUrl: 'template/rating/rating.html'
 })
 
 .controller('RatingController', ['$scope', '$attrs', '$parse', 'ratingConfig', function($scope, $attrs, $parse, ratingConfig) {
@@ -2417,7 +2726,7 @@ angular.module('ui.bootstrap.rating', [])
   }
 }])
 
-.directive('rating', function() {
+.directive('rating', ['ratingConfig', function(ratingConfig) {
   return {
     restrict: 'EA',
     scope: {
@@ -2426,10 +2735,11 @@ angular.module('ui.bootstrap.rating', [])
       onLeave: '&'
     },
     controller: 'RatingController',
-    templateUrl: 'template/rating/rating.html',
+    templateUrl: ratingConfig.templateUrl,
     replace: true
   };
-});
+}]);
+
 
 /**
  * @ngdoc overview
@@ -2447,11 +2757,9 @@ angular.module('ui.bootstrap.tabs', [])
   };
 })
 
-.controller('TabsetController', ['$scope', '$element',
-function TabsetCtrl($scope, $element) {
-
+.controller('TabsetController', ['$scope', function TabsetCtrl($scope) {
   var ctrl = this,
-    tabs = ctrl.tabs = $scope.tabs = [];
+      tabs = ctrl.tabs = $scope.tabs = [];
 
   ctrl.select = function(tab) {
     angular.forEach(tabs, function(tab) {
@@ -2479,6 +2787,12 @@ function TabsetCtrl($scope, $element) {
   };
 }])
 
+.constant('tabsConfig', {
+  tabsetTemplateUrl: 'template/tabs/tabset.html',
+  tabTemplateUrl: 'template/tabs/tab.html',
+  titlesTemplateUrl: 'template/tabs/tabset-titles.html'
+})
+
 /**
  * @ngdoc directive
  * @name ui.bootstrap.tabs.directive:tabset
@@ -2488,7 +2802,6 @@ function TabsetCtrl($scope, $element) {
  * Tabset is the outer container for the tabs directive
  *
  * @param {boolean=} vertical Whether or not to use vertical styling for the tabs.
- * @param {boolean=} justified Whether or not to use justified styling for the tabs.
  * @param {string=} direction  What direction the tabs should be rendered. Available:
  * 'right', 'left', 'below'.
  *
@@ -2496,22 +2809,18 @@ function TabsetCtrl($scope, $element) {
 <example module="ui.bootstrap">
   <file name="index.html">
     <tabset>
-      <tab heading="Tab 1"><b>First</b> Content!</tab>
-      <tab heading="Tab 2"><i>Second</i> Content!</tab>
+      <tab heading="Vertical Tab 1"><b>First</b> Content!</tab>
+      <tab heading="Vertical Tab 2"><i>Second</i> Content!</tab>
     </tabset>
     <hr />
     <tabset vertical="true">
       <tab heading="Vertical Tab 1"><b>First</b> Vertical Content!</tab>
       <tab heading="Vertical Tab 2"><i>Second</i> Vertical Content!</tab>
     </tabset>
-    <tabset justified="true">
-      <tab heading="Justified Tab 1"><b>First</b> Justified Content!</tab>
-      <tab heading="Justified Tab 2"><i>Second</i> Justified Content!</tab>
-    </tabset>
   </file>
 </example>
  */
-.directive('tabset', function() {
+.directive('tabset', ['tabsConfig', function(tabsConfig) {
   return {
     restrict: 'EA',
     transclude: true,
@@ -2519,11 +2828,10 @@ function TabsetCtrl($scope, $element) {
     require: '^tabset',
     scope: {},
     controller: 'TabsetController',
-    templateUrl: 'template/tabs/tabset.html',
+    templateUrl: tabsConfig.tabsetTemplateUrl,
     compile: function(elm, attrs, transclude) {
       return function(scope, element, attrs, tabsetCtrl) {
         scope.vertical = angular.isDefined(attrs.vertical) ? scope.$parent.$eval(attrs.vertical) : false;
-        scope.justified = angular.isDefined(attrs.justified) ? scope.$parent.$eval(attrs.justified) : false;
         scope.type = angular.isDefined(attrs.type) ? scope.$parent.$eval(attrs.type) : 'tabs';
         scope.direction = angular.isDefined(attrs.direction) ? scope.$parent.$eval(attrs.direction) : 'top';
         scope.tabsAbove = (scope.direction != 'below');
@@ -2532,7 +2840,7 @@ function TabsetCtrl($scope, $element) {
       };
     }
   };
-})
+}])
 
 /**
  * @ngdoc directive
@@ -2614,13 +2922,12 @@ function TabsetCtrl($scope, $element) {
   </file>
 </example>
  */
-.directive('tab', ['$parse', '$http', '$templateCache', '$compile',
-function($parse, $http, $templateCache, $compile) {
+.directive('tab', ['$parse', 'tabsConfig', function($parse, tabsConfig) {
   return {
     require: '^tabset',
     restrict: 'EA',
     replace: true,
-    templateUrl: 'template/tabs/tab.html',
+    templateUrl: tabsConfig.tabTemplateUrl,
     transclude: true,
     scope: {
       heading: '@',
@@ -2637,8 +2944,13 @@ function($parse, $http, $templateCache, $compile) {
         if (attrs.active) {
           getActive = $parse(attrs.active);
           setActive = getActive.assign;
-          scope.$parent.$watch(getActive, function updateActive(value) {
-            scope.active = !!value;
+          scope.$parent.$watch(getActive, function updateActive(value, oldVal) {
+            // Avoid re-initializing scope.active as it is already initialized
+            // below. (watcher is called async during init with value ===
+            // oldVal)
+            if (value !== oldVal) {
+              scope.active = !!value;
+            }
           });
           scope.active = getActive(scope.$parent);
         } else {
@@ -2646,6 +2958,8 @@ function($parse, $http, $templateCache, $compile) {
         }
 
         scope.$watch('active', function(active) {
+          // Note this watcher also initializes and assigns scope.active to the
+          // attrs.active expression.
           setActive(scope.$parent, active);
           if (active) {
             tabsetCtrl.select(scope);
@@ -2672,9 +2986,6 @@ function($parse, $http, $templateCache, $compile) {
         scope.$on('$destroy', function() {
           tabsetCtrl.removeTab(scope);
         });
-        if (scope.active) {
-          setActive(scope.$parent, true);
-        }
 
 
         //We need to transclude later, once the content container is ready.
@@ -2700,7 +3011,7 @@ function($parse, $http, $templateCache, $compile) {
   };
 }])
 
-.directive('tabContentTransclude', ['$compile', '$parse', function($compile, $parse) {
+.directive('tabContentTransclude', function() {
   return {
     restrict: 'A',
     require: '^tabset',
@@ -2729,13 +3040,13 @@ function($parse, $http, $templateCache, $compile) {
       node.tagName.toLowerCase() === 'data-tab-heading'
     );
   }
-}])
+})
 
-.directive('tabsetTitles', ['$http', function($http) {
+.directive('tabsetTitles', ['tabsConfig', function(tabsConfig) {
   return {
     restrict: 'A',
     require: '^tabset',
-    templateUrl: 'template/tabs/tabset-titles.html',
+    templateUrl: tabsConfig.titlesTemplateUrl,
     replace: true,
     link: function(scope, elm, attrs, tabsetCtrl) {
       if (!scope.$eval(attrs.tabsetTitles)) {
@@ -2748,10 +3059,7 @@ function($parse, $http, $templateCache, $compile) {
       }
     }
   };
-}])
-
-;
-
+}]);
 
 angular.module('ui.bootstrap.timepicker', [])
 
@@ -2761,7 +3069,8 @@ angular.module('ui.bootstrap.timepicker', [])
   showMeridian: true,
   meridians: ['AM', 'PM'],
   readonlyInput: false,
-  mousewheel: true
+  mousewheel: true,
+  templateUrl: 'template/timepicker/timepicker.html'
 })
 
 .directive('timepicker', ['$parse', '$log', 'timepickerConfig', function ($parse, $log, timepickerConfig) {
@@ -2770,7 +3079,7 @@ angular.module('ui.bootstrap.timepicker', [])
     require:'?^ngModel',
     replace: true,
     scope: {},
-    templateUrl: 'template/timepicker/timepicker.html',
+    templateUrl: timepickerConfig.templateUrl,
     link: function(scope, element, attrs, ngModel) {
       if ( !ngModel ) {
         return; // do nothing if no ng-model
@@ -3251,7 +3560,12 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
 }])
 
-  .directive('typeaheadPopup', function () {
+  .constant('typeaheadConfig', {
+    popupTemplateUrl: 'template/typeahead/typeahead-popup.html',
+    matchTemplateUrl: 'template/typeahead/typeahead-match.html'
+  })
+
+  .directive('typeaheadPopup', ['typeaheadConfig', function (typeaheadConfig) {
     return {
       restrict:'E',
       scope:{
@@ -3262,7 +3576,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         select:'&'
       },
       replace:true,
-      templateUrl:'template/typeahead/typeahead-popup.html',
+      templateUrl: typeaheadConfig.popupTemplateUrl,
       link:function (scope, element, attrs) {
 
         scope.templateUrl = attrs.templateUrl;
@@ -3284,9 +3598,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         };
       }
     };
-  })
+  }])
 
-  .directive('typeaheadMatch', ['$http', '$templateCache', '$compile', '$parse', function ($http, $templateCache, $compile, $parse) {
+  .directive('typeaheadMatch', ['$http', '$templateCache', '$compile', '$parse', 'typeaheadConfig', function ($http, $templateCache, $compile, $parse, typeaheadConfig) {
     return {
       restrict:'E',
       scope:{
@@ -3295,7 +3609,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         query:'='
       },
       link:function (scope, element, attrs) {
-        var tplUrl = $parse(attrs.templateUrl)(scope.$parent) || 'template/typeahead/typeahead-match.html';
+        var tplUrl = $parse(attrs.templateUrl)(scope.$parent) || typeaheadConfig.matchTemplateUrl;
         $http.get(tplUrl, {cache: $templateCache}).success(function(tplContent){
            element.replaceWith($compile(tplContent.trim())(scope));
         });
