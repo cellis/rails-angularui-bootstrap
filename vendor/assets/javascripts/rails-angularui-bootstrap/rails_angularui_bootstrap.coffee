@@ -9,7 +9,6 @@ angular.module('rails-angularui-bootstrap',[]).run(['$templateCache', ($template
 			if key.indexOf(namespace) is 0
 				# this is a rails-angularui-bootstrap template, so cache it as an angular-ui template
 				angularUIBootstrapName = key.replace(namespace,"")
-				angularUIBootstrapDir  = angularUIBootstrapName.split("/")[0]
 				cacheKey = "template/#{angularUIBootstrapName}.html".replace("_","-")
 				$templateCache.put(cacheKey, template(null))
 	return
