@@ -1,10 +1,10 @@
-## Rails AngularUI Bootstrap - wraps [AngularUI Bootstrap](https://github.com/angular-ui/bootstrap) for rails using hamlcoffee.
+## Rails AngularUI Bootstrap - wraps [AngularUI Bootstrap 3](https://github.com/angular-ui/bootstrap) for rails using hamlcoffee.
 
 ***
 
 ## How it works.
 
-rails_angularui_bootstrap uses [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing AngularJS Bootstrap javascript templates in hamlc.
+rails_angularui_bootstrap uses [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing AngularJS Bootstrap 3 javascript templates in hamlc.
 
 ## Installation
 
