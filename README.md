@@ -19,7 +19,7 @@ I've tested this on Rails 4. Should also work with Rails 3.
 		gem 'rails_angularui_bootstrap'
 	```
 3. Install it: 
-	```console
+	```
 		bundle install
 	```
 4. Include all the *default* templates by adding:
