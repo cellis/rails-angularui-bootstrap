@@ -13,34 +13,28 @@ the templates. I'm open to suggestions!
 I've tested this on Rails 4. Should also work with Rails 3.
 
 1. Make sure you have angularjs included in your `application.js` file first.
-
 2. Add rails_angularui_bootstrap to your rails Gemfile with
 
-```ruby
-	gem 'rails_angularui_bootstrap'
-```
-
+	```ruby
+		gem 'rails_angularui_bootstrap'
+	```
 3. Install it: 
-
-```console
-	bundle install
-```
-
+	```console
+		bundle install
+	```
 4. Include all the *default* templates by adding:
-
-```javascript
-	//= require rails-angularui-bootstrap
-```
-to your `app/assets/javascripts/application.js` file.
-
+	```javascript
+		//= require rails-angularui-bootstrap
+	```
+	to your `app/assets/javascripts/application.js` file.
 5. Include Bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](There's a gem for this,too), and include the ui-bootstrap
-in your javascript `application.js` with
+	in your javascript `application.js` with:
 
-```coffeescript 
-	@app = angular.module('app', [
-  	'ui.bootstrap'
-	])
-```
+	```coffeescript 
+		@app = angular.module('app', [
+	  	'ui.bootstrap'
+		])
+	```
 
 You're done.
 
