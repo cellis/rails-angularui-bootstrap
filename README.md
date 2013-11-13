@@ -1,4 +1,4 @@
-# Rails AngularUI Bootstrap - wraps [AngularUI Bootstrap](https://github.com/angular-ui/bootstrap) and allows you to use the AngularUI and Bootstrap 3 project and override the default templates.
+## Rails AngularUI Bootstrap - wraps [AngularUI Bootstrap](https://github.com/angular-ui/bootstrap) for rails using hamlcoffee.
 
 ***
 
@@ -12,26 +12,28 @@ the templates. I'm open to suggestions!
 
 I've tested this on Rails 4. Should also work with Rails 3.
 
-Add it to your rails Gemfile with
+1. Make sure you have angularjs included in your `application.js` file first.
+
+2. Add rails_angularui_bootstrap to your rails Gemfile with
 
 ```ruby
 	gem 'rails_angularui_bootstrap'
 ```
 
-And 
+3. Install it: 
 
 ```console
 	bundle install
 ```
 
-After that, you can include all the *default* templates by adding
+4. Include all the *default* templates by adding:
 
 ```javascript
 	//= require rails-angularui-bootstrap
 ```
 to your `app/assets/javascripts/application.js` file.
 
-Finally, include Bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](There's a gem for this,too), and include the ui-bootstrap
+5. Include Bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](There's a gem for this,too), and include the ui-bootstrap
 in your javascript `application.js` with
 
 ```coffeescript 
