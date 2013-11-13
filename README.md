@@ -4,7 +4,7 @@
 
 ## How it works.
 
-It relies on [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing javascript templates in haml.
+It relies on [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing AngularJS Bootstrap javascript templates in haml*c*
 
 ## Installation
 
