@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/cellis/rails-angularui-bootstrap/"
   s.summary     = "Automatically include default templates in angularui bootstrap"
   s.description = "Automatically include default templates in angularui bootstrap"
+  s.license     = 'MIT'
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]
