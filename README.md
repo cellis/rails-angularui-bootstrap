@@ -89,6 +89,6 @@ See [the original AngularUI Bootstrap files](https://github.com/angular-ui/boots
 
 # How up to date is this project?
 
-Not very. It uses the `ui-bootstrap-0.6.0-SNAPSHOT.js` from [angular-ui/bootstrap:bootstrap3_bis2](https://github.com/angular-ui/bootstrap/tree/bootstrap3_bis2). I'm still working on tucking all this away so it's easy to just download the magic and go! Right now, i'm just manually maintaining it, so use at your own risk.
+Not very. It uses the `ui-bootstrap-0.6.0-SNAPSHOT.js` from *@elerch*s fork of angularui/bootstrap [angular-ui/bootstrap:bootstrap3_bis2](https://github.com/elerch/bootstrap/tree/bootstrap3_bis2) because the collapse directive works in that. I'm still working on tucking all this away so it's easy to just download the magic and go! Right now, i'm just manually maintaining it, so use at your own risk.
 
 Released under the terms of the MIT-LICENSE
