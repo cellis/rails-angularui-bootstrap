@@ -4,9 +4,7 @@
 
 ## How it works.
 
-It relies on [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing 
-javascript templates in haml. It's currently using AngularUI Bootstrap's version at 0.6.0, until I find a way to automate the integration of all
-the templates. I'm open to suggestions!
+It relies on [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing javascript templates in haml.
 
 ## Installation
 
@@ -72,10 +70,6 @@ in your app/assets/javascripts/application.js file.
 
 You can override templates by simply adding the template hamlc file in a directory called app/assets/javascripts/templates/rails-angularui-bootstrap/
 
-
-
-
-
 For instance, to override the accordion,
 create:
 
@@ -85,6 +79,6 @@ See [the original AngularUI Bootstrap files](https://github.com/angular-ui/boots
 
 # How up to date is this project?
 
-Not very. It uses the `ui-bootstrap-0.6.0-SNAPSHOT.js` from [*@elerch*'s](https://github.com/elerch) fork of angularui/bootstrap [angular-ui/bootstrap:bootstrap3_bis2](https://github.com/elerch/bootstrap/tree/bootstrap3_bis2) because the collapse directive works in that. I'm still working on tucking all this away so it's easy to just download the magic and go! Right now, i'm just manually maintaining it, so use at your own risk.
+It uses the `ui-bootstrap-0.6.0-SNAPSHOT.js` from [*@elerch*'s](https://github.com/elerch) fork of angularui/bootstrap [angular-ui/bootstrap:bootstrap3_bis2](https://github.com/elerch/bootstrap/tree/bootstrap3_bis2) because the collapse directive works in that. If you'd like to use the base repo you can do that using the generate task above.
 
 Released under the terms of the MIT-LICENSE
