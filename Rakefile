@@ -4,7 +4,6 @@ namespace :angularui do
 	desc 'Download and install templates of given branch of angularui for the *gem*'
 	task :generate_templates, :repo, :branch do |t, args|
 		args.with_defaults(ctx: 'vendor')
-		puts "args are #{args.inspect}"
 		gen_templates args
 	end
 end

@@ -1,4 +1,4 @@
-// generated from https://github.com/elerch/bootstrap.git:bootstrap3_bis2 version: 0.6.0-SNAPSHOT on 11-12-2013 00:30:05 
+// generated from https://github.com/elerch/bootstrap.git:bootstrap3_bis2 version: 0.6.0-SNAPSHOT on 11-12-2013 21:32:23 
 angular.module("ui.bootstrap", ["ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdownToggle","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
 angular.module('ui.bootstrap.transition', [])
 
