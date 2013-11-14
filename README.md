@@ -35,7 +35,7 @@ I've tested this on Rails 4. Should also work with Rails 3.
 	```
 6. ###Enjoy!
 
-## But I want to customizing the templates. How do I do that?
+## How to customize the templates
 
 There's a rake task for that. Run
 
