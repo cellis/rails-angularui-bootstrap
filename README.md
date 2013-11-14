@@ -33,7 +33,7 @@ I've tested this on Rails 4. Should also work with Rails 3.
 	  	'ui.bootstrap'
 		])
 	```
-6. ###Enjoy!
+6. Enjoy!
 
 ## How to customize the templates
 
