@@ -33,14 +33,13 @@ I've tested this on Rails 4. Should also work with Rails 3.
 	  	'ui.bootstrap'
 		])
 	```
+6. ###Enjoy!
 
-You're done.
-
-## Generating the templates
+## But I want to customizing the templates. How do I do that?
 
 There's a rake task for that. Run
 
-`rake angularui:generate` to create all the haml templates in your app. 
+`rake angularui:generate` to create all the haml templates in your app. You can then customize the markup as you see fit.
 
 You can specify an angularui bootstrap fork and a branch with:
 
