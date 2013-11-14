@@ -10,7 +10,7 @@ rails_angularui_bootstrap uses [Haml Coffee Assets](https://github.com/netzpirat
 
 I've tested this on Rails 4. Should also work with Rails 3.
 
-1. Make sure you have angularjs included in your `application.js` file first. The (angularjs-rails)[https://github.com/hiravgandhi/angularjs-rails] gem can do this for you.
+1. Make sure you have angularjs included in your `application.js` file first. The [angularjs-rails](https://github.com/hiravgandhi/angularjs-rails) gem can do this for you.
 2. Add rails_angularui_bootstrap to your rails Gemfile with
 
 	```ruby
