@@ -15,7 +15,10 @@ I've tested this on Rails 4. Should also work with Rails 3.
 	```ruby
 		gem 'rails_angularui_bootstrap'
 	```
-	or live on the edge with `gem 'rails_angularui_bootstrap', github: 'cellis/rails-angularui-bootstrap'` 
+	or live on the edge with 
+	```ruby
+	 gem 'rails_angularui_bootstrap', github: 'cellis/rails-angularui-bootstrap'
+	```
 2. Install it: 
 	```
 		bundle install
