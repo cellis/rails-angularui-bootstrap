@@ -25,15 +25,16 @@ I've tested this on Rails 4. Should also work with Rails 3.
 		//= require rails-angularui-bootstrap
 	```
 	to your `app/assets/javascripts/application.js` file.
-5. Include Bootstrap 3 in your css [https://github.com/anjlab/bootstrap-rails](There's a gem for this,too), and include the ui-bootstrap
-	in your javascript `application.js` with:
+5. Include Bootstrap 3 in your css. 
+	You can use the [anjlab/bootstrap-rails](https://github.com/anjlab/bootstrap-rails) gem for this.
 
+6. Include the ui-bootstrap in your javascript `application.js` with:
 	```coffeescript 
 		@app = angular.module('app', [
 	  	'ui.bootstrap'
 		])
 	```
-6. Enjoy!
+7. Enjoy!
 
 ## How to customize the templates
 
