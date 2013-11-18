@@ -2,6 +2,7 @@
 
 ***
 
+
 ## How it works.
 
 rails_angularui_bootstrap uses [Haml Coffee Assets](https://github.com/netzpirat/haml_coffee_assets) for easily writing AngularJS Bootstrap 3 javascript templates in hamlc.
